@@ -1,0 +1,65 @@
+#!/usr/bin/bash
+
+if [[ $EUID -eq 0 ]]
+then
+	echo 'do not run this script with root permissions!'
+	exit
+fi
+
+echo '[+] this script may ask for root permissions to modify resolv.conf & iptables'
+echo -e '\n'
+
+# disconnect windscribe
+echo '=> windscribe disconnect'
+windscribe disconnect
+echo -e '\t...done'
+
+
+echo -e '\n'
+
+# stop firewall
+echo '=> windscribe firewall off'
+windscribe firewall off
+echo -e '\t...done'
+
+
+echo -e '\n'
+
+# restore iptables
+echo '=> iptables-restore /etc/iptables/no_vpn_rules.v4'
+sudo iptables-restore /etc/iptables/no_vpn_rules.v4
+echo -e '\t...done'
+
+
+echo -e '\n'
+
+# make backup of resolv.conf
+echo '=> cp /etc/resolv.conf /etc/resolv-mooscript.conf.bak'
+sudo cp /etc/resolv.conf /etc/resolv-mooscript.backup
+echo -e '\t...done'
+
+echo -e '\n'
+
+# configure novpn resolv file
+echo '=> cp /etc/resolv-novpn.copy /etc/resolv.conf'
+sudo cp /etc/resolv-novpn.copy /etc/resolv.conf
+echo -e '\t...done'
+
+echo -e '\n'
+
+# display whats been done
+echo '[+] all work completed, check below to validate whats been done...'
+echo -e '\n'
+
+sudo iptables --list --verbose --numeric
+
+echo -e '\n'
+
+cat /etc/resolv.conf
+
+echo -e '\n'
+
+windscribe status
+
+echo -e '\n'
+
